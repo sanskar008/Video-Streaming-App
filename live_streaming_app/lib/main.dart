@@ -1,7 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'websocket_service.dart';
-import 'dart:convert'; // Import to use json.decode
 
 void main() => runApp(const MyApp());
 
@@ -33,7 +33,9 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
   void initState() {
     super.initState();
     socketService.connect('ws://localhost:8080'); // Connect to WebSocket server
-    socketService.socketStream.listen((data) {
+
+    // Listen to WebSocket messages
+    socketService.messages.listen((data) {
       final message = data.toString();
       if (message.contains('offer')) {
         handleOffer(message);
@@ -71,7 +73,10 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         .setRemoteDescription(RTCSessionDescription(offer, 'offer'));
     RTCSessionDescription answer = await _peerConnection!.createAnswer();
     await _peerConnection!.setLocalDescription(answer);
-    socketService.send('answer: ${answer.sdp}');
+    socketService.send(json.encode({
+      'type': 'answer',
+      'sdp': answer.sdp,
+    }));
   }
 
   void handleAnswer(String answer) async {
@@ -80,17 +85,26 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
   }
 
   void handleCandidate(String candidate) async {
-    // Parse the candidate string into a Map
-    var candidateMap = json.decode(candidate); // Decode the candidate to a Map
-
-    // Create RTCIceCandidate using the decoded values
+    // Decode the candidate and send it to the peer connection
+    var candidateMap = json.decode(candidate);
     RTCIceCandidate iceCandidate = RTCIceCandidate(
-      candidateMap['candidate'], // Candidate string (stays the same)
-      candidateMap['sdpMid'], // sdpMid should be a String
-      candidateMap['sdpMLineIndex'], // sdpMLineIndex should be an int
+      candidateMap['candidate'],
+      candidateMap['sdpMid'],
+      candidateMap['sdpMLineIndex'] as int?,
     );
-
     await _peerConnection!.addCandidate(iceCandidate);
+  }
+
+  void startLiveStream() async {
+    // Create an offer
+    RTCSessionDescription offer = await _peerConnection!.createOffer();
+    await _peerConnection!.setLocalDescription(offer);
+
+    // Send the offer to the WebSocket server
+    socketService.send(json.encode({
+      'type': 'offer',
+      'sdp': offer.sdp,
+    }));
   }
 
   @override
@@ -110,10 +124,7 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
           Expanded(child: RTCVideoView(_localRenderer)),
           Expanded(child: RTCVideoView(_remoteRenderer)),
           ElevatedButton(
-            onPressed: () {
-              // Start streaming (Host will send offer to WebSocket server)
-              socketService.send('offer');
-            },
+            onPressed: startLiveStream, // Trigger the live stream start here
             child: const Text('Start Live Stream'),
           ),
         ],

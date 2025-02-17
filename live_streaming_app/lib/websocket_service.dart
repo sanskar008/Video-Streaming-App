@@ -1,20 +1,23 @@
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketService {
-  late WebSocketChannel _channel;
+  late WebSocketChannel channel;
 
+  // Connect to the WebSocket server
   void connect(String url) {
-    _channel = WebSocketChannel.connect(Uri.parse(url));
+    channel = WebSocketChannel.connect(Uri.parse(url));
   }
 
-  // Expose the _socket stream via a public getter
-  Stream get socketStream => _channel.stream;
+  // Listen to the WebSocket messages
+  Stream get messages => channel.stream;
 
+  // Send data to the WebSocket server
   void send(String message) {
-    _channel.sink.add(message);
+    channel.sink.add(message);
   }
 
+  // Disconnect from the WebSocket server
   void disconnect() {
-    _channel.sink.close();
+    channel.sink.close();
   }
 }
