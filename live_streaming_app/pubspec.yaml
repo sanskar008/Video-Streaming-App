@@ -37,6 +37,8 @@ dependencies:
   flutter_webrtc: ^0.6.9
   socket_io_client: ^2.0.0
   web_socket_channel: ^2.1.0
+  emoji_picker_flutter: ^1.6.4
+  webview_flutter: ^4.8.0
 
 dev_dependencies:
   flutter_test:
