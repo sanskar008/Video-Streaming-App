@@ -1,0 +1,2 @@
+C:/Users/Sanskar/Documents/Projects/Video Streaming App/app/Video-Streaming-App/live_streaming_app/android/app/.cxx/Debug/wc6n3r6w/x86/CMakeFiles/edit_cache.dir
+C:/Users/Sanskar/Documents/Projects/Video Streaming App/app/Video-Streaming-App/live_streaming_app/android/app/.cxx/Debug/wc6n3r6w/x86/CMakeFiles/rebuild_cache.dir
